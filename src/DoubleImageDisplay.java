@@ -1,5 +1,8 @@
+import java.awt.Rectangle;
 import java.awt.image.*;
+
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 
 public class DoubleImageDisplay
 {
@@ -14,10 +17,14 @@ public class DoubleImageDisplay
 	private String _containerTitle = "Double Image Display";
 	private String _firstImageTitle = "First Image:";
 	private String _secondImageTitle = "Second Image:";
+	private String _searchResultTitle = "Search result: ";
 	private JFrame _frame;
 	private JPanel _basePanel;
 	private JLabel _firstImageLabel;
 	private JLabel _secondImageLabel;
+	private JLabel _searchResultLabel;
+	private JLabel _searchResultTextLabel;
+	private JLabel[] _labels;
 	
 	public DoubleImageDisplay(String containerTitle, String firstImageTitle,
 			String secondImageTitle, String[] labels)
@@ -86,6 +93,45 @@ public class DoubleImageDisplay
 		_frame.setVisible(true);
 	}
 	
+	// Displays search result box over second image (if found) and updates search result label
+	public void displaySearchResult(Rectangle result)
+	{
+		// Remove previous search result labels
+		_basePanel.remove(_searchResultTextLabel);
+		if (_searchResultLabel != null)
+		{
+			_basePanel.remove(_searchResultLabel);
+		}
+		
+		// Draw new search result labels based on result
+		if (result == null)
+		{
+			_searchResultTextLabel.setText(_searchResultTitle + "No");
+		}
+		else
+		{
+			_searchResultTextLabel.setText(_searchResultTitle + "Yes");
+		
+			// Draw black rectangle over matched region in search image
+			if (_secondImageLabel != null)
+			{
+				JLabel imageResult = new JLabel();
+				imageResult.setLocation(
+						_secondImageLabel.getLocation().x + result.x,
+						_secondImageLabel.getLocation().y + result.y);
+				imageResult.setSize(result.width, result.height);
+				imageResult.setBorder(LineBorder.createBlackLineBorder());
+				_basePanel.add(imageResult);
+				_basePanel.setComponentZOrder(imageResult, 0);
+			}
+		}
+		
+		_basePanel.add(_searchResultTextLabel);
+		// "Refresh" view
+		_frame.setContentPane(_basePanel);
+		_frame.setVisible(true);
+	}
+	
 	private void initDisplay(String[] labels)
 	{
 		// Create JFrame
@@ -109,9 +155,16 @@ public class DoubleImageDisplay
 				(DoubleImageDisplay.HORIZONTAL_PADDING * 3) + DoubleImageDisplay.IMAGE_WIDTH,
 				DoubleImageDisplay.VERTICAL_PADDING/2);
 		_basePanel.add(secondTitleLabel);
+		// Draw search result label
+		_searchResultTextLabel = createTextLabel(
+				_searchResultTitle,
+				DoubleImageDisplay.HORIZONTAL_PADDING,
+				DoubleImageDisplay.VERTICAL_PADDING/2 + DoubleImageDisplay.IMAGE_HEIGHT);
+		_basePanel.add(_searchResultTextLabel);
 		// Draw additional text labels (if any)
 		if (labels != null)
 		{
+			_labels = new JLabel[labels.length + 1];
 			int y_position = DoubleImageDisplay.VERTICAL_PADDING + DoubleImageDisplay.IMAGE_HEIGHT;
 			for (int i = 0; i < labels.length; i++)
 			{
@@ -119,6 +172,7 @@ public class DoubleImageDisplay
 						labels[i],
 						DoubleImageDisplay.HORIZONTAL_PADDING,
 						y_position);
+				_labels[i] = textLabel;
 				_basePanel.add(textLabel);
 				y_position += (DoubleImageDisplay.VERTICAL_PADDING/2);
 			}

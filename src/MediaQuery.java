@@ -1,3 +1,4 @@
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
@@ -20,6 +21,8 @@ public class MediaQuery
 	private static DoubleImageDisplay _display;
 	private static BufferedImage _searchImage;
 	private static BufferedImage _queryImage;
+	private static MediaSearchEngine _searchEngine;
+	private static Rectangle _searchResult;
 	
 	// Input arguments
 	private static String _queryImageFilePath;
@@ -98,14 +101,14 @@ public class MediaQuery
 		_inputArgumentsList = new String[]{InputArgumentNamesList[0] + _queryImageFilePath, InputArgumentNamesList[1] + _searchImageFilePath};
 		
 		// Parse/validate query and search images
-		_queryImage = new BufferedImage(MediaQuery.ImageWidth, MediaQuery.ImageHeight, BufferedImage.TYPE_INT_RGB);
-		if (!readRGBFileImage(_queryImageFilePath, _queryImage, MediaQuery.ImageWidth, MediaQuery.ImageHeight))
+		_queryImage = new BufferedImage(ImageWidth, ImageHeight, BufferedImage.TYPE_INT_RGB);
+		if (!readRGBFileImage(_queryImageFilePath, _queryImage, ImageWidth, ImageHeight))
 		{
 			System.out.println("Exiting program due to invalid query image.");
 			return;
 		}
-		_searchImage = new BufferedImage(MediaQuery.ImageWidth, MediaQuery.ImageHeight, BufferedImage.TYPE_INT_RGB);
-		if (!readRGBFileImage(_searchImageFilePath, _searchImage, MediaQuery.ImageWidth, MediaQuery.ImageHeight))
+		_searchImage = new BufferedImage(ImageWidth, ImageHeight, BufferedImage.TYPE_INT_RGB);
+		if (!readRGBFileImage(_searchImageFilePath, _searchImage, ImageWidth, ImageHeight))
 		{
 			System.out.println("Exiting program due to invalid search image.");
 			return;
@@ -115,5 +118,20 @@ public class MediaQuery
 		_display = new DoubleImageDisplay(ProjectTitle, QueryImageTitle, SearchImageTitle, _inputArgumentsList);
 		_display.setFirstImage(_queryImage);
 		_display.setSecondImage(_searchImage);
+		
+		// Initialize image search engine
+		_searchEngine = new MediaSearchEngine(ImageWidth, ImageHeight, _searchImage);
+		
+		// Search for image and output result
+		_searchResult = _searchEngine.search(_queryImage);
+		_display.displaySearchResult(_searchResult);
+		if (_searchResult == null)
+		{
+			System.out.println("No");
+		}
+		else
+		{
+			System.out.println("Yes");
+		}
 	}
 }
