@@ -23,6 +23,8 @@ public class MediaQuery
 	private static BufferedImage _queryImage;
 	private static MediaSearchEngine _searchEngine;
 	private static Rectangle _searchResult;
+	private static String _alphaImageFilePath;
+	private static boolean[][] _alphaImage;
 	
 	// Input arguments
 	private static String _queryImageFilePath;
@@ -84,6 +86,84 @@ public class MediaQuery
 		return isValidImage;
 	}
 
+	private static void readAlphaFileImage(String filePath, int width, int height)
+	{
+		boolean isAlphaFile = true;
+		
+		if (filePath == null)
+		{
+			isAlphaFile = false;
+		}
+		
+		File file = null;
+		InputStream is = null;
+		try
+		{
+			// Read file as byte array
+			file = new File(filePath);
+			is = new FileInputStream(file);
+			long length = file.length();
+			byte[] bytes = new byte[(int)length];
+			int offset = 0;
+			int numRead = 0;
+			while (offset < bytes.length
+					&& (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) 
+			{
+				offset += numRead;
+			}
+	
+			// Parse byte array to BufferImage and image pixel array
+			int ind = 0;
+			for (int y = 0; y < height; y++) 
+			{
+				for (int x = 0; x < width; x++)
+				{
+					Byte a = bytes[ind];
+					int alphaValue = 0x00000000 | a;
+					// System.out.println("Alpha value: " + alphaValue);
+					_alphaImage[x][y] = (alphaValue == 1);
+					
+					ind++;
+				}
+			}
+			
+			is.close();
+		}
+		catch (FileNotFoundException e) 
+		{
+			isAlphaFile = false;
+		} 
+		catch (IOException e) 
+		{
+			isAlphaFile = false;
+		}
+		
+		if (!isAlphaFile)
+		{
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					_alphaImage[x][y] = true;
+				}
+			}
+		}
+	}
+	
+	private static String parseAlphaFilePath(String imageFilePath)
+	{
+		String alphaFilePath = null;
+		int endPos = imageFilePath.indexOf("_source");
+		if ((endPos >= 0) && (endPos < imageFilePath.length()))
+		{
+			alphaFilePath = imageFilePath.substring(0, endPos);
+			alphaFilePath += ".alpha";
+		}
+		
+		System.out.println("Alpha file path: " + alphaFilePath);
+		
+		return alphaFilePath;
+	}
 	
 	/* Public methods */
 	public static void main(String[] args)
@@ -99,6 +179,7 @@ public class MediaQuery
 		_queryImageFilePath = args[0];
 		_searchImageFilePath = args[1];
 		_inputArgumentsList = new String[]{InputArgumentNamesList[0] + _queryImageFilePath, InputArgumentNamesList[1] + _searchImageFilePath};
+		_alphaImageFilePath = parseAlphaFilePath(_queryImageFilePath);
 		
 		// Parse/validate query and search images
 		_queryImage = new BufferedImage(ImageWidth, ImageHeight, BufferedImage.TYPE_INT_RGB);
@@ -114,6 +195,9 @@ public class MediaQuery
 			return;
 		}
 		
+		_alphaImage = new boolean[ImageWidth][ImageHeight];
+		readAlphaFileImage(_alphaImageFilePath, ImageWidth, ImageHeight);
+		
 		// Initialize program output display and show query and search images
 		_display = new DoubleImageDisplay(ProjectTitle, QueryImageTitle, SearchImageTitle, _inputArgumentsList);
 		_display.setFirstImage(_queryImage);
@@ -123,7 +207,7 @@ public class MediaQuery
 		_searchEngine = new MediaSearchEngine(ImageWidth, ImageHeight, _searchImage);
 		
 		// Search for image and output result
-		_searchResult = _searchEngine.search(_queryImage);
+		_searchResult = _searchEngine.search(_queryImage, _alphaImage);
 		_display.displaySearchResult(_searchResult);
 		if (_searchResult == null)
 		{
