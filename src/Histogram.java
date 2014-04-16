@@ -4,55 +4,42 @@ import java.util.Map;
 public class Histogram 
 {
 	private Map<Integer, Double> _histogram;
-	private double _numPixels;
-	private double _minHue = 360.0;
-	private double _maxHue = -1.0;
+	private int _numPixels;
 	
-	private static int hueThreshold = 1;
-	private static double valueThreshold = 100;
+	private static int hueThreshold = 2;
+	private static double huePixelCountThreshold = 100;
 	private static double levels = 360.0;
 	
 	public Histogram()
 	{
 		_histogram = new HashMap<Integer, Double>();
-		_numPixels = 0.0;
-	}
-	
-	public Map<Integer, Double> getHistogram()
-	{
-		return _histogram;
+		_numPixels = 0;
 	}
 	
 	public void AddValue(Integer hueValue)
 	{
 		int hueBucket = hueValue/hueThreshold;
-		double prevValue = 0.0;
+		double huePixelCount = 0.0;
 		if (_histogram.containsKey(hueBucket))
 		{
-			prevValue = _histogram.get(hueBucket);
+			huePixelCount = _histogram.get(hueBucket);
 		}
 		
-		if (hueValue > _maxHue)
-		{
-			_maxHue = hueValue;
-		}
-		
-		if (hueValue < _minHue)
-		{
-			_minHue = hueValue;
-		}
-
-		_histogram.put(hueBucket, prevValue + 1.0);
+		_histogram.put(hueBucket, huePixelCount + 1.0);
 		_numPixels++;
 	}
 	
 	public void Normalize()
 	{
-		for (Integer hue : _histogram.keySet())
+		for (Integer hueBucket : _histogram.keySet())
 		{
-			double count = _histogram.get(hue);
-			count = Math.round((count - _minHue)/(_numPixels - _minHue)*(levels - 1.0));
-			_histogram.put(hue, count);
+			double count = _histogram.get(hueBucket);
+			count = (double)count/((double)_numPixels);
+			
+			// Round off to nearest hundreth
+			count = Math.round(count*100.0)/100.0;
+			
+			_histogram.put(hueBucket, count);
 		}
 	}
 	
@@ -61,21 +48,25 @@ public class Histogram
 	{
 		Map<Integer, Double> m = h.getHistogram();
 		boolean match = true;
-		for (Integer hue : m.keySet())
+		for (Integer hueBucket : m.keySet())
 		{
-			if (!this._histogram.containsKey(hue))
+			double hueBucketVal = m.get(hueBucket);
+			if (hueBucketVal > 0.01)
 			{
-				match = false;
-				break;
-			}
-			
-			double c1 = this._histogram.get(hue);
-			double c2 = m.get(hue);
-			
-			if (Math.abs(c1 - c2) > valueThreshold)
-			{
-				match = false;
-				break;
+				if (!_histogram.containsKey(hueBucket))
+				{
+					match = false;
+					break;
+				}
+				
+				/*
+				double myHueBucketVal = _histogram.get(hueBucket);
+				if (Math.abs(hueBucketVal - myHueBucketVal) > valueThreshold)
+				{
+					match = false;
+					break;
+				}
+				*/
 			}
 		}
 		
@@ -91,5 +82,16 @@ public class Histogram
 		}
 		
 		System.out.println();
+	}
+	
+	// Accessors
+	public Map<Integer, Double> getHistogram()
+	{
+		return _histogram;
+	}
+	
+	public int getNumPixels()
+	{
+		return _numPixels;
 	}
 }
