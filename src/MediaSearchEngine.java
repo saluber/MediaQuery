@@ -8,15 +8,17 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+import sun.misc.FloatingDecimal;
+
 public class MediaSearchEngine
 {
 	private int _width, _height;
 	private ArrayList<BufferedImage> _searchImages;
 	private ArrayList<Double[][][]> _hsvSearchImages;
 	private ArrayList<Histogram2> _searchImageHistograms;
-	Double[][][] _hsvQueryImage;
-	Histogram2 _queryImageHistogram;
-	Integer[][] _backProjectedArray;
+	private Double[][][] _hsvQueryImage;
+	private Histogram2 _queryImageHistogram;
+	private Integer[][] _backProjectedArray;
 	private BufferedImage _backProjectedImage;
 
 	
@@ -29,23 +31,14 @@ public class MediaSearchEngine
 		_hsvSearchImages = new ArrayList<Double[][][]>();
 		_searchImageHistograms = new ArrayList<Histogram2>();
 		_backProjectedArray = new Integer[width][height];
-		_backProjectedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-	}
-	
-	
-	public MediaSearchEngine(int width, int height, ArrayList<BufferedImage> searchImages)
-	{
-		_width = width;
-		_height = height;
-		_searchImages = searchImages;
-	}
-		
-	
-	// Create HSV histogram for Query Image
-	public void createHSV(BufferedImage query, boolean[][] alphaImage) {
-		
+		_backProjectedImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 		_hsvQueryImage = new Double[_width][_height][3];
 		_queryImageHistogram = new Histogram2();
+	}
+	
+	// Create HSV histogram for Query Image
+	public void createHSV(BufferedImage query, boolean[][] alphaImage) 
+	{
 		
 		for (int y = 0; y < _height; y++) {
 			for (int x = 0; x < _width; x++) {
@@ -56,11 +49,39 @@ public class MediaSearchEngine
 					int g = (pixel >> 8) & 0x000000FF;
 					int b = pixel & 0x000000FF;
 					
+					if (r > 255)
+					{
+						r = 255;
+					}
+					else if (r < 0)
+					{
+						r = 0;
+					}
+					if (g > 255)
+					{
+						g = 255;
+					}
+					else if (g < 0)
+					{
+						g = 0;
+					}
+					if (b > 255)
+					{
+						b = 255;
+					}
+					else if (b < 0)
+					{
+						b = 0;
+					}
+					
 					float[] hsv = new float[3];
 					Color.RGBtoHSB(r, g, b, hsv);
-					_hsvQueryImage[x][y][0] = (double) hsv[0]; // hue
-					_hsvQueryImage[x][y][1] = (double) hsv[1];
-					_hsvQueryImage[x][y][2] = (double) hsv[2];
+					Float h_value = new Float(hsv[0]); // hue
+					Float s_value = new Float(hsv[1]); // sat
+					Float v_value = new Float(hsv[2]); // val
+					_hsvQueryImage[x][y][0] = new FloatingDecimal(h_value.floatValue()).doubleValue();
+					_hsvQueryImage[x][y][1] = new FloatingDecimal(s_value.floatValue()).doubleValue();
+					_hsvQueryImage[x][y][2] = new FloatingDecimal(v_value.floatValue()).doubleValue();
 					
 					_queryImageHistogram.AddValue((hsv));					
 				}
@@ -69,12 +90,14 @@ public class MediaSearchEngine
 		
 		// Normalize the histogram
 		_queryImageHistogram.Normalize();
+		
+		// Print the histogram
 		_queryImageHistogram.print();		
 		
 	}
 	
 	// Searches images for query image and returns rectangle of match region (if found)
-	public Rectangle find(BufferedImage searchImage) {
+	public Rectangle find() {
 		System.out.println("Finding query in search image");
 		
 		Rectangle result = null;
@@ -91,14 +114,41 @@ public class MediaSearchEngine
 					int r = ((pixel >> 16) & 0x000000FF);
 					int g = ((pixel >> 8) & 0x000000FF);
 					int b = (pixel & 0x000000FF);
-														
+													
+					if (r > 255)
+					{
+						r = 255;
+					}
+					else if (r < 0)
+					{
+						r = 0;
+					}
+					if (g > 255)
+					{
+						g = 255;
+					}
+					else if (g < 0)
+					{
+						g = 0;
+					}
+					if (b > 255)
+					{
+						b = 255;
+					}
+					else if (b < 0)
+					{
+						b = 0;
+					}
+					
 					// Method 3: Using Color.RGBtoHSB method
 					float[] hsv = new float[3];
 					Color.RGBtoHSB(r, g, b, hsv);
-					hsvImage[x][y][0] = (double) hsv[0]; // hue
-					hsvImage[x][y][1] = (double) hsv[1];
-					hsvImage[x][y][2] = (double) hsv[2];
-					
+					Float h_value = new Float(hsv[0]); // hue
+					Float s_value = new Float(hsv[1]); // sat
+					Float v_value = new Float(hsv[2]); // val
+					hsvImage[x][y][0] = new FloatingDecimal(h_value.floatValue()).doubleValue();
+					hsvImage[x][y][1] = new FloatingDecimal(s_value.floatValue()).doubleValue();
+					hsvImage[x][y][2] = new FloatingDecimal(v_value.floatValue()).doubleValue();
 					
 					// Back-projection Algorithm
 					// Get bin number of hue
@@ -106,20 +156,22 @@ public class MediaSearchEngine
 					
 					// Get value of the corresponding bin from the Query Image
 					int queryValue = _queryImageHistogram.getBinValue(bin);
-											
+					//int origQueryValue = queryValue;
 					
 					//System.out.println("Bin: " + bin + ", Value: " + queryValue + "   R: " + r + " G: " + g + " B: " + b + "  Hue: " + hsv[0] + " Sat: " + hsv[1] + " Val: " + hsv[2]);
+					// queryValue = (int)Math.round(((double)queryValue/(double)_queryImageHistogram.gexMaxBinValue())*255.0);
+					if (queryValue > 0)
+					{
+						//System.out.println("Bin: " + bin + " Query value: " + origQueryValue + " Rgb value: " + queryValue);
+					}
 
-					
-					queryValue = (int) Math.floor((double)queryValue/_queryImageHistogram.gexMaxBinValue()*255);
-					
-					int pix = 0xff000000 | ((queryValue & 0xff) << 16)
-							| ((queryValue & 0xff) << 8) | (queryValue & 0xff);
+					int grayPixel = 0;
+					grayPixel = (grayPixel | ((queryValue & 0xff) << 16)
+							| ((queryValue & 0xff) << 8) | (queryValue & 0xff))/3;
 					
 					// Set pixel of backProjectedImage to this value
 					_backProjectedArray[x][y] = queryValue;
-					_backProjectedImage.setRGB(x, y, pix);
-					
+					_backProjectedImage.setRGB(x, y, grayPixel);
 					
 				}
 			}

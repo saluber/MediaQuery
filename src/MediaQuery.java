@@ -1,4 +1,5 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -68,7 +69,7 @@ public class MediaQuery
 					Byte r = bytes[ind];
 					Byte g = bytes[ind + height * width];
 					Byte b = bytes[ind + height * width * 2];
-					int pix = 0xff000000 | ((r & 0xff) << 16)
+					int pix = ((a & 0xff) << 24) | ((r & 0xff) << 16)
 							| ((g & 0xff) << 8) | (b & 0xff);
 					// int pix = ((a << 24) + (r << 16) + (g << 8) + b);
 					image.setRGB(x, y, pix);
@@ -100,48 +101,58 @@ public class MediaQuery
 		{
 			isAlphaFile = false;
 		}
-		
-		File file = null;
-		InputStream is = null;
-		try
+		else
 		{
-			// Read file as byte array
-			file = new File(filePath);
-			is = new FileInputStream(file);
-			long length = file.length();
-			byte[] bytes = new byte[(int)length];
-			int offset = 0;
-			int numRead = 0;
-			while (offset < bytes.length
-					&& (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) 
+			File file = null;
+			InputStream is = null;
+			try
 			{
-				offset += numRead;
-			}
-	
-			// Parse byte array to BufferImage and image pixel array
-			int ind = 0;
-			for (int y = 0; y < height; y++) 
-			{
-				for (int x = 0; x < width; x++)
+				// Read file as byte array
+				file = new File(filePath);
+				is = new FileInputStream(file);
+				long length = file.length();
+				byte[] bytes = new byte[(int)length];
+				int offset = 0;
+				int numRead = 0;
+				while (offset < bytes.length
+						&& (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) 
 				{
-					Byte a = bytes[ind];
-					int alphaValue = 0x00000000 | a;
-					// System.out.println("Alpha value: " + alphaValue);
-					_alphaImage[x][y] = (alphaValue == 1);
-					
-					ind++;
+					offset += numRead;
 				}
+		
+				// Parse byte array to BufferImage and image pixel array
+				int ind = 0;
+				for (int y = 0; y < height; y++) 
+				{
+					for (int x = 0; x < width; x++)
+					{
+						Byte a = bytes[ind];
+						int alphaValue = 0;
+						alphaValue = alphaValue | (a & 0xff);
+						// System.out.println("Alpha value: " + alphaValue);
+						if (alphaValue == 1)
+						{
+							_alphaImage[x][y] = true;
+						}
+						else
+						{
+							_alphaImage[x][y] = false;
+						}
+						
+						ind++;
+					}
+				}
+				
+				is.close();
 			}
-			
-			is.close();
-		}
-		catch (FileNotFoundException e) 
-		{
-			isAlphaFile = false;
-		} 
-		catch (IOException e) 
-		{
-			isAlphaFile = false;
+			catch (FileNotFoundException e) 
+			{
+				isAlphaFile = false;
+			} 
+			catch (IOException e) 
+			{
+				isAlphaFile = false;
+			}
 		}
 		
 		if (!isAlphaFile)
@@ -167,6 +178,53 @@ public class MediaQuery
 		}
 				
 		return alphaFilePath;
+	}
+	
+	// Create HSV histogram for Search Image
+	private static void printHSVHistogram(BufferedImage image) 
+	{
+		Histogram2 imageHistogram = new Histogram2();
+		for (int y = 0; y < image.getHeight(); y++) 
+		{
+			for (int x = 0; x < image.getWidth(); x++) 
+			{
+					int pixel = image.getRGB(x, y);
+					int r = (pixel >> 16) & 0x000000FF;
+					int g = (pixel >> 8) & 0x000000FF;
+					int b = (pixel & 0x000000FF);
+					if (r > 255)
+					{
+						r = 255;
+					}
+					else if (r < 0)
+					{
+						r = 0;
+					}
+					if (g > 255)
+					{
+						g = 255;
+					}
+					else if (g < 0)
+					{
+						g = 0;
+					}
+					if (b > 255)
+					{
+						b = 255;
+					}
+					else if (b < 0)
+					{
+						b = 0;
+					}
+					
+					float[] hsv = new float[3];
+					Color.RGBtoHSB(r, g, b, hsv);
+					imageHistogram.AddValue((hsv));					
+			}
+		}
+		
+		imageHistogram.Normalize();
+		imageHistogram.print();		
 	}
 	
 	/* Public methods */
@@ -216,6 +274,12 @@ public class MediaQuery
 	    frame.setVisible(true);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+	    // Create histogram for search image & print it
+	    System.out.println("Printing search image HSV histogram");
+	    printHSVHistogram(_searchImage);
+	    System.out.println("------");
+	    System.out.println();
+	    
 		// Initialize image search engine		
 		_searchEngine = new MediaSearchEngine(ImageWidth, ImageHeight, _searchImage);
 		
@@ -224,7 +288,7 @@ public class MediaQuery
 				
 		// Search for image and output result
 		//_searchResult = _searchEngine.search(_queryImage, _alphaImage);
-		_searchResult = _searchEngine.find(_searchImage);
+		_searchResult = _searchEngine.find();
 		//_display.displaySearchResult(_searchResult);
 		if (_searchResult == null)
 		{
