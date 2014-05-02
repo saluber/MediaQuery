@@ -1,6 +1,11 @@
+import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.*;
+
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 public class MediaQuery
 {
@@ -21,6 +26,7 @@ public class MediaQuery
 	private static DoubleImageDisplay _display;
 	private static BufferedImage _searchImage;
 	private static BufferedImage _queryImage;
+	private static BufferedImage _backProjection;
 	private static MediaSearchEngine _searchEngine;
 	private static Rectangle _searchResult;
 	private static String _alphaImageFilePath;
@@ -58,7 +64,7 @@ public class MediaQuery
 			{
 				for (int x = 0; x < width; x++)
 				{
-					// byte a = 0;
+					byte a = 0;
 					Byte r = bytes[ind];
 					Byte g = bytes[ind + height * width];
 					Byte b = bytes[ind + height * width * 2];
@@ -159,9 +165,7 @@ public class MediaQuery
 			alphaFilePath = imageFilePath.substring(0, endPos);
 			alphaFilePath += ".alpha";
 		}
-		
-		System.out.println("Alpha file path: " + alphaFilePath);
-		
+				
 		return alphaFilePath;
 	}
 	
@@ -199,16 +203,29 @@ public class MediaQuery
 		readAlphaFileImage(_alphaImageFilePath, ImageWidth, ImageHeight);
 		
 		// Initialize program output display and show query and search images
-		_display = new DoubleImageDisplay(ProjectTitle, QueryImageTitle, SearchImageTitle, _inputArgumentsList);
-		_display.setFirstImage(_queryImage);
-		_display.setSecondImage(_searchImage);
+		//_display = new DoubleImageDisplay(ProjectTitle, QueryImageTitle, SearchImageTitle, _inputArgumentsList);
+		//_display.setFirstImage(_queryImage);
 		
-		// Initialize image search engine
+	//	_display.setSecondImage(_searchImage);
+		
+		JFrame frame = new JFrame();
+		JLabel label = new JLabel(new ImageIcon(_queryImage));
+		frame.getContentPane().add(label, BorderLayout.CENTER);
+	    frame.setLocation(10, 0);
+	    frame.pack();
+	    frame.setVisible(true);
+	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		// Initialize image search engine		
 		_searchEngine = new MediaSearchEngine(ImageWidth, ImageHeight, _searchImage);
 		
+		// Get HSV histogram for Query Image
+		_searchEngine.createHSV(_queryImage, _alphaImage);
+				
 		// Search for image and output result
-		_searchResult = _searchEngine.search(_queryImage, _alphaImage);
-		_display.displaySearchResult(_searchResult);
+		//_searchResult = _searchEngine.search(_queryImage, _alphaImage);
+		_searchResult = _searchEngine.find(_searchImage);
+		//_display.displaySearchResult(_searchResult);
 		if (_searchResult == null)
 		{
 			System.out.println("No");
