@@ -11,9 +11,9 @@ public class ClusterGroup {
 	ArrayList<ArrayList<Point>> listOfClusters;
 	Point[][] pointsArray;
 	ArrayList<Integer[]> listOfRectangles;
-	private static int VALUE_THRESHOLD = 10;
+	private static int VALUE_THRESHOLD = 30;
 	private static int RADIUS = 1;
-	private static int MIN_CLUSTER_SIZE = 100;
+	private static int MIN_CLUSTER_SIZE = 50;
 	private static int _maxBin;
 	private Histogram2 _searchHistogram;
 	
@@ -50,7 +50,7 @@ public class ClusterGroup {
 
 
 				// If point has not been visited
-				if (!visitedArray[x][y] && bin == _maxBin){
+				if ((!visitedArray[x][y]) && ((bin == _maxBin))){
 				//	System.out.println("Bin value: " + value);
 
 					// If value is not 0

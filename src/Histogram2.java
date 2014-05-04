@@ -7,7 +7,7 @@ public class Histogram2 {
 	public static int H_BINS = 60;
 	private int GRAY_BINS = 4;
 	private int TOTAL_BINS = H_BINS + GRAY_BINS;
-	private int histogram_height = 256; //TOTAL_BINS; // 256
+	public static int histogram_height = 1000; //TOTAL_BINS; // 256
 	private double threshold = 0.5; // threshold for comparing histograms
 	private double valueRatioThreshold = 0.5;
 	
@@ -44,24 +44,8 @@ public class Histogram2 {
 				//int normalizedValue = (_histogram[i]*histogram_height)/_numPixels;
 				//_histogram[i] = normalizedValue;
 				
-				sum += _histogram[i];
-				sum_sqr += _histogram[i]*_histogram[i];
-		}
-		
-		_mean = sum/(double)_numPixels;
-		_var = (sum_sqr - (sum*sum)/(double)_numPixels)/((double)_numPixels - 1); 
-	}
-	
-	public void Normalize(Histogram2 logoHistogram) {
-		double sum = 0.0;
-		double sum_sqr = 0.0;
-		for (int i = 0; i<_histogram.length; i++) {
-				_histogram[i] = (int)Math.round(((double)_histogram[i]*(double)histogram_height)/(double)_numPixels);
-				//int normalizedValue = (_histogram[i]*histogram_height)/_numPixels;
-				//_histogram[i] = normalizedValue;
-				
-				sum += _histogram[i];
-				sum_sqr += _histogram[i]*_histogram[i];
+				sum += _histogram[i]/(double)histogram_height;
+				sum_sqr += _histogram[i]/(double)histogram_height*_histogram[i]/(double)histogram_height;
 		}
 		
 		_mean = sum/(double)_numPixels;
@@ -123,7 +107,7 @@ public class Histogram2 {
 		double s = new FloatingDecimal(s_value.floatValue()).doubleValue();
 		double v = new FloatingDecimal(v_value.floatValue()).doubleValue();
 		
-		if (v < 0.125)
+		if (v < 0.1)
 		{
 			// BLACK
 			return H_BINS;
@@ -163,7 +147,7 @@ public class Histogram2 {
 	public int getMinBinValue(){
 		int max = getMaxBinValue();
 		int min = max;
-		for (int i=0; i< _histogram.length; i++){
+		for (int i=0; i< H_BINS; i++){
 			if ((_histogram[i] < min) ){
 				min = _histogram[i];
 			}
@@ -179,7 +163,7 @@ public class Histogram2 {
 	
 	public int getMaxBinValue(){
 		int max = 0;
-		for (int i=0; i< _histogram.length; i++){
+		for (int i=0; i< H_BINS; i++){
 			if (_histogram[i] > max){
 				max = _histogram[i];
 			}
@@ -192,7 +176,7 @@ public class Histogram2 {
 	public int getMaxBin(){
 		int maxBin = 0;
 		int max = 0;
-		for (int i=0; i< _histogram.length; i++){
+		for (int i=0; i< H_BINS; i++){
 			if (_histogram[i] > max){
 				maxBin = i;
 				max = _histogram[i];
@@ -271,31 +255,29 @@ public class Histogram2 {
 	
 	public Integer[] getBinRange(int bin){
 		Integer[] range;
-		if (bin >= H_BINS) {
+		if (bin == H_BINS) {
 			range = new Integer[1];
 			range[0] = bin;
+		} else if (bin > H_BINS ) {
+				range = new Integer[3];
+				range[0] = bin;
+				range[1] = bin + 1;
+				range [2] = bin + 2;
 		} else if (bin == 0){
-			range = new Integer[5];
-			range[0] = H_BINS - 2;
-			range[1] = H_BINS - 1;
-			range[2] = bin;
-			range[3] = bin+1;
-			range[4] = bin+2;
-
+			range = new Integer[3];
+			range[0] = H_BINS - 1;
+			range[1] = bin;
+			range[2] = bin+1;
 		} else if (bin == H_BINS - 1){
-			range = new Integer[5];
-			range[3] = bin-2;
+			range = new Integer[3];
 			range[0] = bin-1;
 			range[1] = bin;
 			range[2] = 0;
-			range[3] = 1;
 		} else {
-			range = new Integer[5];
-			range[0] = bin-2;
-			range[1] = bin-1;
-			range[2] = bin;
-			range[3] = bin+1;
-			range[4] = bin+2;
+			range = new Integer[3];
+			range[0] = bin-1;
+			range[1] = bin;
+			range[2] = bin+1;
 		}
 	return range;
 	}

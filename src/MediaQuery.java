@@ -299,5 +299,7 @@ public class MediaQuery
 		{
 			System.out.println("Yes");
 		}
+		
+		return;
 	}
 }

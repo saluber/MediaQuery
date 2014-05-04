@@ -175,7 +175,7 @@ public class MediaSearchEngine
 					int queryValue = _queryImageHistogram.getBinValue(bin);
 					
 
-					queryValue = (int)Math.round(((double)queryValue/(double)_queryImageHistogram.getMaxBinValue())*255.0);
+					queryValue = (int)Math.round(((double)queryValue/(double)Histogram2.histogram_height)*255.0);
 					
 					//queryValue = (int)Math.round(((double)queryValue/(double)_queryImageHistogram.getMaxBinValue())*255.0);
 					//if (bin >= h.H_BINS) {
@@ -241,8 +241,8 @@ public class MediaSearchEngine
 					}
 				}
 				
-				histogram.Normalize(this._queryImageHistogram);
-				histogram.print();
+				histogram.Normalize();
+				//histogram.print();
 				System.out.println();
 				System.out.println("Printing histogram for cluster #" + j);
 				
