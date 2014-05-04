@@ -40,7 +40,7 @@ public class Clusters {
 								
 				// for each pixel in the back-projected image, check for clustering
 				int value = _backProjectedArray[x][y];	
-				System.out.println("Value at " + x + ", " + y + " : " + value);
+			//	System.out.println("Value at " + x + ", " + y + " : " + value);
 				if (value != 0 && clusterArray[x][y] == -1){
 					//System.out.println("Pixel with value");
 					ArrayList<Integer[]> cluster = createCluster();
@@ -63,7 +63,7 @@ public class Clusters {
 		}
 	//	System.out.println("Cluster array");
 		//printClusterArray();
-		System.out.println("Number of clusters total: " + _listOfClusters.size());
+	//	System.out.println("Number of clusters total: " + _listOfClusters.size());
 	//	printListOfRectangles();
 	}
 	
@@ -140,8 +140,8 @@ public class Clusters {
 				}
 			}
 		}
-		System.out.println("Neighbors for point " + x + ", " + y);
-		printCluster(neighbors);
+		//System.out.println("Neighbors for point " + x + ", " + y);
+		//printCluster(neighbors);
 		return neighbors;
 	}
 	

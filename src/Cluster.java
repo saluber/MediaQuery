@@ -74,8 +74,9 @@ public class Cluster {
 		if (point_x < rectangle_x){
 			rectangle[0] = point_x;
 		} else {
-			if (point_x - rectangle_x > rectangle_width){
-				rectangle[2] = point_x - rectangle_x;
+			int width = point_x - rectangle_x + 1;
+			if (width > rectangle_width){
+				rectangle[2] = width;
 			}
 		}
 				
@@ -83,8 +84,9 @@ public class Cluster {
 		if (point_y < rectangle_y){
 			rectangle[1] = point_y;
 		} else {
-			if (point_y - rectangle_y > rectangle_height){
-						rectangle[3] = point_y - rectangle_y;
+			int height = point_y - rectangle_y + 1;
+			if (height > rectangle_height){
+				rectangle[3] = height;
 			}
 		}
 		

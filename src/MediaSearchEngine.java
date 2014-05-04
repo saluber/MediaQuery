@@ -1,9 +1,11 @@
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.image.BufferedImage;
@@ -112,6 +114,7 @@ public class MediaSearchEngine
 		System.out.println("Finding query in search image");
 		
 		Rectangle result = null;
+		int resultNum = -1;
 		double resultDistance = Double.MAX_VALUE;
 		boolean matched = false;
 		
@@ -170,14 +173,14 @@ public class MediaSearchEngine
 					
 					// Get value of the corresponding bin from the Query Image
 					int queryValue = _queryImageHistogram.getBinValue(bin);
-					//int origQueryValue = queryValue;
 					
-					//System.out.println("Bin: " + bin + ", Value: " + queryValue + "   R: " + r + " G: " + g + " B: " + b + "  Hue: " + hsv[0] + " Sat: " + hsv[1] + " Val: " + hsv[2]);
+
 					queryValue = (int)Math.round(((double)queryValue/(double)_queryImageHistogram.getMaxBinValue())*255.0);
-					if (queryValue > 0)
-					{
-						//System.out.println("Bin: " + bin + " Query value: " + origQueryValue + " Rgb value: " + queryValue);
-					}
+					
+					//queryValue = (int)Math.round(((double)queryValue/(double)_queryImageHistogram.getMaxBinValue())*255.0);
+					//if (bin >= h.H_BINS) {
+					//	queryValue = 0;
+					//}
 
 					int grayPixel = 0;
 					grayPixel = (grayPixel | ((queryValue & 0xff) << 16)
@@ -190,8 +193,10 @@ public class MediaSearchEngine
 				}
 			}
 			
+			int maxBin = _queryImageHistogram.getMaxBin();
+			
 			// Returns an ArrayList of Integer[] where each Integer[] corresponds to a rectangle
-			ClusterGroup clusters = new ClusterGroup(_backProjectedArray, _width, _height);
+			ClusterGroup clusters = new ClusterGroup(_backProjectedArray, _width, _height, maxBin, hsvImage);
 			ArrayList<Integer[]> listOfRectangles = clusters.getListOfRectangles();
 			
 			// Sort clusters by size
@@ -237,10 +242,10 @@ public class MediaSearchEngine
 				}
 				
 				histogram.Normalize(this._queryImageHistogram);
-				
+				histogram.print();
 				System.out.println();
 				System.out.println("Printing histogram for cluster #" + j);
-				//histogram.print();
+				
 				_searchImageHistograms.add(histogram);
 				
 				double distance = _queryImageHistogram.Compare(histogram);
@@ -250,16 +255,18 @@ public class MediaSearchEngine
 					matched = true;
 					resultDistance = distance;
 					result = new Rectangle(rectangle_x, rectangle_y, rectangle_width, rectangle_height);
+					resultNum = j;
+					//histogram.print();
 				}
 			}
-			
+			/*
 			JFrame frame1 = new JFrame();
 		    frame1.setLocation(372, 0);
 			JPanel panel = new JPanel();
 			panel.setLayout(null);
 			panel.setOpaque(true);
 			// Draw search image
-			JLabel label2 = new JLabel(new ImageIcon(image));
+			
 			label2.setSize(image.getWidth(), image.getHeight());
 			label2.setLocation(0, 0);
 			panel.add(label2);
@@ -281,7 +288,7 @@ public class MediaSearchEngine
 			frame1.setContentPane(panel);
 		    frame1.pack();
 		    frame1.setVisible(true);
-		    frame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		    frame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); */
 		    
 		    JFrame frame2 = new JFrame();
 			JLabel label3 = new JLabel(new ImageIcon(_backProjectedImage));
@@ -293,16 +300,14 @@ public class MediaSearchEngine
 		    frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 			
-			/*DrawRectangle rect=new DrawRectangle();
+		    JLabel label2 = new JLabel(new ImageIcon(image));
+			DrawRectangle rect = new DrawRectangle(listOfRectangles, resultNum);
 			rect.getContentPane().add(label2, BorderLayout.CENTER);
+			//rect.getContentPane().setPreferredSize(new Dimension(_width, _height));
 			rect.pack();
-			rect.setLocation(372, 400); */
-		    
-		   /* GameFrame g = new GameFrame(rectangles, new JLabel(new ImageIcon(image)));
-		    g.setLocation(372, 400);
-		    //g.getContentPane().add(label2, BorderLayout.CENTER);
-		    g.pack();
-		    g.setVisible(true); */
+			//rect.setLocationRelativeTo(null);
+			rect.setLocation(372, 0);
+
 			if (matched)
 			{
 				// Matched symbol
@@ -330,77 +335,54 @@ public class MediaSearchEngine
 	}
 	
 	
-/*
+
 	
-	public class GameFrame extends JFrame {
-		public GameFrame(ArrayList<Integer[]> rectangles, JLabel label) {
-			super("Game Frame");
-		    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		   // getContentPane().add(label, BorderLayout.CENTER);
-		    Squares squares = new Squares();
-		    getContentPane().add(squares);
-		    for (int i = 0; i < rectangles.size(); i++) {
-		    	Integer[] rectangle = rectangles.get(i);
-		  		int rectangle_x = rectangle[0];
-		  		int rectangle_y = rectangle[1];
-		  		int rectangle_width = rectangle[2];
-		  		int rectangle_height = rectangle[3];
-		        squares.addSquare(rectangle_x, rectangle_y, rectangle_width, rectangle_height);
-		    }
-		    
-		  //  pack();
-		   // setLocationRelativeTo(null);
-		   // setVisible(true);
-
-		   }
-
-		}
 	
-	class Squares extends JPanel {
-		   private List<Rectangle> squares = new ArrayList<Rectangle>();
 
-		   public void addSquare(int x, int y, int width, int height) {
-		      Rectangle rect = new Rectangle(x, y, width, height);
-		      squares.add(rect);
-		   }
 
-		   @Override
-		   protected void paintComponent(Graphics g) {
-		      super.paintComponent(g);
-		      Graphics2D g2 = (Graphics2D) g;
-		      for (Rectangle rect : squares) {
-		    	 g2.setColor(Color.black);
-		         g2.draw(rect);
-		      }
-		   }
-
-		}
-	
-*/
-/*
 
 class DrawRectangle extends JFrame {
-	public DrawRectangle() {
+	
+	ArrayList<Integer[]> _rectangles;
+	int _resultNum;
+	int _topInset;
+	
+	public DrawRectangle(ArrayList<Integer[]> rectangles, int resultNum) {
 		//to  Set JFrame title
-		super("Draw A Rectangle In JFrame");
+		super("Result");
+		_rectangles = rectangles;
+		_resultNum = resultNum;
 
 		//Set default close operation for JFrame
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		//Set JFrame size
-		//setSize(500,500);
-
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);;
+		
 		//Make JFrame visible
 		setVisible(true);
+		
+		Insets c = getInsets();
+		_topInset = c.top;
+		
+		
 	}
 
 	public void paint(Graphics g) {
 		super.paint(g);
-		g.setColor(Color.yellow);
-		g.drawRect(0,0,100,100);//this will draw your border. 
-
+		for (int i=0; i<_rectangles.size(); i++){
+			Integer[] rectangle = _rectangles.get(i);
+	  		int rectangle_x = rectangle[0];
+	  		int rectangle_y = rectangle[1];
+	  		int rectangle_width = rectangle[2];
+	  		int rectangle_height = rectangle[3];
+	  		if (i == _resultNum){
+	  			g.setColor(Color.yellow);
+	  		} else {
+	  			g.setColor(Color.blue);
+	  		}
+	  		g.drawRect(rectangle_x, rectangle_y + _topInset, rectangle_width, rectangle_height);
+		}
 	}
-} */
+
+} 
 
 
 }

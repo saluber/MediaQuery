@@ -7,36 +7,54 @@ public class ClusterGroup {
 	int HEIGHT;
 	int WIDTH;
 	Boolean[][] visitedArray;
-	int RADIUS;
-	int MIN_CLUSTER_SIZE;
+	
 	ArrayList<ArrayList<Point>> listOfClusters;
 	Point[][] pointsArray;
 	ArrayList<Integer[]> listOfRectangles;
-	private static int VALUE_THRESHOLD = 0;
+	private static int VALUE_THRESHOLD = 10;
+	private static int RADIUS = 1;
+	private static int MIN_CLUSTER_SIZE = 100;
+	private static int _maxBin;
+	private Histogram2 _searchHistogram;
 	
-	public ClusterGroup(Integer[][] BPArray, int imageWidth, int imageHeight){
+	public ClusterGroup(Integer[][] BPArray, int imageWidth, int imageHeight, int maxBin, Double[][][] hsvImage){
 		
 		backProjectedArray = BPArray;
 		WIDTH = imageWidth;
 		HEIGHT = imageHeight;
-		RADIUS = 1;
-		MIN_CLUSTER_SIZE = 50;
 		listOfClusters = new ArrayList<ArrayList<Point>>();
 		listOfRectangles = new ArrayList<Integer[]>();
 		visitedArray = new Boolean[WIDTH][HEIGHT];
 		pointsArray = new Point[WIDTH][HEIGHT];
 		initializeVisitedArray();
 		initializePointsArray();
+		_maxBin = maxBin;
+		_searchHistogram = new Histogram2();
+		
+		
+		System.out.println("max bin: " + _maxBin);
 		
 		for (int y=0; y<HEIGHT; y++){
 			for (int x=0; x<WIDTH; x++){
 				
-				int value = backProjectedArray[x][y];
-				
+			int value = backProjectedArray[x][y];
+			float[] hsv = new float[3];
+			Double h_value = new Double(hsvImage[x][y][0]);
+			Double s_value = new Double(hsvImage[x][y][1]);
+			Double v_value = new Double(hsvImage[x][y][2]);
+			hsv[0] = h_value.floatValue();
+			hsv[1] = s_value.floatValue();
+			hsv[2] = v_value.floatValue();
+			
+			int bin = _searchHistogram.getHBin(hsv);
+
+
 				// If point has not been visited
-				if (!visitedArray[x][y]){
-				
+				if (!visitedArray[x][y] && bin == _maxBin){
+				//	System.out.println("Bin value: " + value);
+
 					// If value is not 0
+					// Cluster must start with max color value from logo histogram
 					if (value > VALUE_THRESHOLD){
 						// Start a new cluster
 						Cluster cluster = new Cluster();
@@ -66,7 +84,6 @@ public class ClusterGroup {
 			printRectangle(listOfRectangles.get(i));
 			System.out.println("");
 		} 
-		System.out.println("Number of clusters: " + listOfClusters.size());
 		System.out.println("Number of rectangles: " + listOfRectangles.size());
 		
 	}

@@ -4,7 +4,7 @@ public class Histogram2 {
 	
 	private Integer[] _histogram;
 	private int _numPixels;
-	private int H_BINS = 50;
+	public static int H_BINS = 60;
 	private int GRAY_BINS = 4;
 	private int TOTAL_BINS = H_BINS + GRAY_BINS;
 	private int histogram_height = 256; //TOTAL_BINS; // 256
@@ -123,7 +123,7 @@ public class Histogram2 {
 		double s = new FloatingDecimal(s_value.floatValue()).doubleValue();
 		double v = new FloatingDecimal(v_value.floatValue()).doubleValue();
 		
-		if (v < 0.1)
+		if (v < 0.125)
 		{
 			// BLACK
 			return H_BINS;
@@ -188,17 +188,6 @@ public class Histogram2 {
 		return max;
 	}
 	
-	public int get2ndMaxBinValue(){
-		int maxBin = getMaxBin();
-		int max = 0;
-		for (int i=0; i< _histogram.length; i++){
-			if ((_histogram[i] > max) && (i != maxBin)){
-				max = _histogram[i];
-			}
-		}
-		
-		return max;
-	}
 	
 	public int getMaxBin(){
 		int maxBin = 0;
@@ -212,6 +201,7 @@ public class Histogram2 {
 		
 		return maxBin;
 	}
+	
 	
 	public double Compare(Histogram2 h)
 	{
@@ -233,25 +223,80 @@ public class Histogram2 {
 			distance = -1.0;
 		}
 		
-		
-		
-		// Check if max bin in logo image is in search image cluster
-		double queryImageMaxBinRatio = (double)this.getMaxBinValue()/(double)this.getNumPixels();
-		double searchImageMaxBinRatio = (double)h.getMaxBinValue()/(double)h.getNumPixels();
-		double queryImageSecondMaxBinRatio = (double)this.get2ndMaxBinValue()/(double)this.getNumPixels();
-		double searchImageSecondMaxBinRatio = (double)h.get2ndMaxBinValue()/(double)h.getNumPixels();
-		
-		double queryRatio = queryImageSecondMaxBinRatio/queryImageMaxBinRatio;
-		double searchRatio = searchImageSecondMaxBinRatio/searchImageMaxBinRatio;
-		System.out.println("Ratio difference: " + Math.abs(queryRatio - searchRatio));
-		if (!(Math.abs(queryRatio - searchRatio) < valueRatioThreshold))
-		{
-			System.out.println("Not match due to ratio difference. Query image: " + queryRatio
-					+ ". Search image: " + searchRatio);
-			System.out.println("Difference: " + Math.abs(queryRatio - searchRatio));
+		int maxBin = this.getMaxBin();
+		boolean containsRange = false;
+		Integer[] binRange = h.getBinRange(h.getMaxBin());
+		for (int i=0; i<binRange.length; i++){
+			if (binRange[i] == maxBin) {
+				containsRange = true;
+				break;
+			}
+		}
+
+		if (!containsRange) {
 			distance = -1.0;
 		}
 		
+	/*	
+		// Check if max bin in logo image is in search image cluster
+		int maxBin = this.getMaxBin();
+		int searchBinSum = 0;
+		Integer[] binRange = h.getBinRange(maxBin);
+		for (int i=0; i<binRange.length; i++){
+			searchBinSum += h.getBinValue(binRange[i]);
+		}
+		double queryImageMaxBinRatio = (double)this.getMaxBinValue()/(double)this.sumBinValues();
+		double searchImageMaxBinRatio = (double)searchBinSum/(double)h.sumBinValues();
+		
+		System.out.println("Query max bin ratio: " + queryImageMaxBinRatio);
+		System.out.println("Search max bin ratio: " + searchImageMaxBinRatio);
+		//double queryImageSecondMaxBinRatio = (double)this.get2ndMaxBinValue()/(double)this.getNumPixels();
+		//double searchImageSecondMaxBinRatio = (double)h.get2ndMaxBinValue()/(double)h.getNumPixels();
+		
+		//double queryRatio = queryImageSecondMaxBinRatio/queryImageMaxBinRatio;
+		//double searchRatio = searchImageSecondMaxBinRatio/searchImageMaxBinRatio;
+		System.out.println("Ratio difference: " + Math.abs(queryImageMaxBinRatio - searchImageMaxBinRatio));
+		if (!(Math.abs(queryImageMaxBinRatio - searchImageMaxBinRatio) < valueRatioThreshold))
+		{
+			System.out.println("Not match due to ratio difference. Query image: " + queryImageMaxBinRatio
+					+ ". Search image: " + searchImageMaxBinRatio);
+			System.out.println("Difference: " + Math.abs(queryImageMaxBinRatio - searchImageMaxBinRatio));
+			distance = -1.0;
+		} 
+		
+		*/
 		return distance;
+	}
+	
+	
+	public Integer[] getBinRange(int bin){
+		Integer[] range;
+		if (bin >= H_BINS) {
+			range = new Integer[1];
+			range[0] = bin;
+		} else if (bin == 0){
+			range = new Integer[5];
+			range[0] = H_BINS - 2;
+			range[1] = H_BINS - 1;
+			range[2] = bin;
+			range[3] = bin+1;
+			range[4] = bin+2;
+
+		} else if (bin == H_BINS - 1){
+			range = new Integer[5];
+			range[3] = bin-2;
+			range[0] = bin-1;
+			range[1] = bin;
+			range[2] = 0;
+			range[3] = 1;
+		} else {
+			range = new Integer[5];
+			range[0] = bin-2;
+			range[1] = bin-1;
+			range[2] = bin;
+			range[3] = bin+1;
+			range[4] = bin+2;
+		}
+	return range;
 	}
 }
