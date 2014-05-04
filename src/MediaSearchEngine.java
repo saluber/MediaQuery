@@ -173,7 +173,7 @@ public class MediaSearchEngine
 					//int origQueryValue = queryValue;
 					
 					//System.out.println("Bin: " + bin + ", Value: " + queryValue + "   R: " + r + " G: " + g + " B: " + b + "  Hue: " + hsv[0] + " Sat: " + hsv[1] + " Val: " + hsv[2]);
-					queryValue = (int)Math.round(((double)queryValue/(double)_queryImageHistogram.gexMaxBinValue())*255.0);
+					queryValue = (int)Math.round(((double)queryValue/(double)_queryImageHistogram.getMaxBinValue())*255.0);
 					if (queryValue > 0)
 					{
 						//System.out.println("Bin: " + bin + " Query value: " + origQueryValue + " Rgb value: " + queryValue);
@@ -237,6 +237,7 @@ public class MediaSearchEngine
 				}
 				
 				histogram.Normalize(this._queryImageHistogram);
+				
 				System.out.println();
 				System.out.println("Printing histogram for cluster #" + j);
 				//histogram.print();

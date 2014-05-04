@@ -9,6 +9,7 @@ public class Histogram2 {
 	private int TOTAL_BINS = H_BINS + GRAY_BINS;
 	private int histogram_height = 256; //TOTAL_BINS; // 256
 	private double threshold = 0.5; // threshold for comparing histograms
+	private double valueRatioThreshold = 0.5;
 	
 	private double _mean;
 	private double _var;
@@ -160,7 +161,7 @@ public class Histogram2 {
 	
 	// Gets the smallest bin value that is != max value
 	public int getMinBinValue(){
-		int max = gexMaxBinValue();
+		int max = getMaxBinValue();
 		int min = max;
 		for (int i=0; i< _histogram.length; i++){
 			if ((_histogram[i] < min) ){
@@ -176,7 +177,7 @@ public class Histogram2 {
 		return min;
 	}
 	
-	public int gexMaxBinValue(){
+	public int getMaxBinValue(){
 		int max = 0;
 		for (int i=0; i< _histogram.length; i++){
 			if (_histogram[i] > max){
@@ -185,6 +186,31 @@ public class Histogram2 {
 		}
 		
 		return max;
+	}
+	
+	public int get2ndMaxBinValue(){
+		int maxBin = getMaxBin();
+		int max = 0;
+		for (int i=0; i< _histogram.length; i++){
+			if ((_histogram[i] > max) && (i != maxBin)){
+				max = _histogram[i];
+			}
+		}
+		
+		return max;
+	}
+	
+	public int getMaxBin(){
+		int maxBin = 0;
+		int max = 0;
+		for (int i=0; i< _histogram.length; i++){
+			if (_histogram[i] > max){
+				maxBin = i;
+				max = _histogram[i];
+			}
+		}
+		
+		return maxBin;
 	}
 	
 	public double Compare(Histogram2 h)
@@ -201,13 +227,29 @@ public class Histogram2 {
 		*/
 		System.out.println("B distance: " + distance);
 		
+		// Check if distance difference is within threshold
 		if ((distance > threshold) || distance.isNaN())
 		{
 			distance = -1.0;
 		}
-		else
+		
+		
+		
+		// Check if max bin in logo image is in search image cluster
+		double queryImageMaxBinRatio = (double)this.getMaxBinValue()/(double)this.getNumPixels();
+		double searchImageMaxBinRatio = (double)h.getMaxBinValue()/(double)h.getNumPixels();
+		double queryImageSecondMaxBinRatio = (double)this.get2ndMaxBinValue()/(double)this.getNumPixels();
+		double searchImageSecondMaxBinRatio = (double)h.get2ndMaxBinValue()/(double)h.getNumPixels();
+		
+		double queryRatio = queryImageSecondMaxBinRatio/queryImageMaxBinRatio;
+		double searchRatio = searchImageSecondMaxBinRatio/searchImageMaxBinRatio;
+		System.out.println("Ratio difference: " + Math.abs(queryRatio - searchRatio));
+		if (!(Math.abs(queryRatio - searchRatio) < valueRatioThreshold))
 		{
-			
+			System.out.println("Not match due to ratio difference. Query image: " + queryRatio
+					+ ". Search image: " + searchRatio);
+			System.out.println("Difference: " + Math.abs(queryRatio - searchRatio));
+			distance = -1.0;
 		}
 		
 		return distance;
