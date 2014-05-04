@@ -8,6 +8,11 @@ public class Histogram2 {
 	private int GRAY_BINS = 4;
 	private int TOTAL_BINS = H_BINS + GRAY_BINS;
 	private int histogram_height = 256; //TOTAL_BINS; // 256
+	private double threshold = 0.01; // threshold for comparing histograms
+	
+	private double _mean;
+	private double _var;
+	
 	/*
 	private int BLACKBIN = H_BINS;
 	private int WHITEBIN = H_BINS + 1;
@@ -21,6 +26,8 @@ public class Histogram2 {
 			_histogram[i] = 0;
 		}
 		_numPixels = 0;
+		_mean = 0;
+		_var = 0;
 	}
 	
 	public void AddValue(float[] hsv) {
@@ -30,11 +37,19 @@ public class Histogram2 {
 	
 	
 	public void Normalize() {
+		double sum = 0.0;
+		double sum_sqr = 0.0;
 		for (int i = 0; i<_histogram.length; i++) {
 				_histogram[i] = (int)Math.round(((double)_histogram[i]*(double)histogram_height)/(double)_numPixels);
 				//int normalizedValue = (_histogram[i]*histogram_height)/_numPixels;
 				//_histogram[i] = normalizedValue;
-		}	
+				
+				sum += _histogram[i];
+				sum_sqr += _histogram[i]*_histogram[i];
+		}
+		
+		_mean = sum/(double)_numPixels;
+		_var = (sum_sqr - (sum*sum)/(double)_numPixels)/((double)_numPixels - 1); 
 	}
 	
 	public void print() {	
@@ -47,6 +62,16 @@ public class Histogram2 {
 	// Accessors	
 	public Integer[] getHistogram() {
 		return _histogram;
+	}
+	
+	public double getMean()
+	{
+		return _mean;
+	}
+	
+	public double getVariance()
+	{
+		return _var;
 	}
 		
 	public int getNumPixels() {
@@ -145,5 +170,28 @@ public class Histogram2 {
 		}
 		
 		return max;
+	}
+	
+	public boolean Equals(Histogram2 h)
+	{
+		boolean isMatch = true;
+		double distance = 0.25*(this.getVariance()/h.getVariance() + h.getVariance()/this.getVariance() + 2);
+		System.out.println("preln distance: " + distance);
+		distance = 0.25*Math.log1p(distance);
+		System.out.println("ln distance: " + distance);
+		distance += 0.25*(Math.pow(this.getMean() - h.getMean(), 2.0)/(this.getVariance() + h.getVariance()));
+		
+		System.out.println("Query mean: " + this.getMean());
+		System.out.println("Query var: " + this.getVariance());
+		System.out.println("Search image mean: " + h.getMean());
+		System.out.println("Search image var: " + h.getVariance());
+		System.out.println("B distance: " + distance);
+		
+		if (distance > threshold)
+		{
+			isMatch = false;
+		}
+		
+		return isMatch;
 	}
 }

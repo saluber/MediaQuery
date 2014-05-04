@@ -15,6 +15,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 
 import sun.misc.FloatingDecimal;
 
@@ -111,6 +112,8 @@ public class MediaSearchEngine
 		System.out.println("Finding query in search image");
 		
 		Rectangle result = null;
+		boolean matched = false;
+		
 		for (int i = 0; i < _searchImages.size(); i++) {
 			BufferedImage image = _searchImages.get(i);
 			Double[][][] hsvImage = new Double[_width][_height][3];
@@ -191,28 +194,69 @@ public class MediaSearchEngine
 			ArrayList<Integer[]> listOfRectangles = clusters.getListOfRectangles();
 			
 			// Create a histogram for each rectangle and add to rectangleHistograms
-			for (int j=0; j<listOfRectangles.size(); j++){
+			for (int j = 0; j< listOfRectangles.size(); j++){
 				Integer[] rectangle = listOfRectangles.get(j);
 				int rectangle_x = rectangle[0];
 				int rectangle_y = rectangle[1];
 				int rectangle_width = rectangle[2];
 				int rectangle_height = rectangle[3];
 				
+				// Create histogram for cluster
+				Histogram2 histogram = new Histogram2();
 				for (int y=rectangle_y; y<rectangle_y + rectangle_height; y++){
 					for (int x=rectangle_x; x<rectangle_x + rectangle_width; x++){
 						
-						Double hue = hsvImage[x][y][0];
+						float[] hsv = new float[3];
+						Double h_value = new Double(hsvImage[x][y][0]);
+						Double s_value = new Double(hsvImage[x][y][1]);
+						Double v_value = new Double(hsvImage[x][y][2]);
+						hsv[0] = h_value.floatValue();
+						hsv[1] = s_value.floatValue();
+						hsv[2] = v_value.floatValue();
+						
+						histogram.AddValue(hsv);
 					}
 				}
+				
+				histogram.Normalize();
+				System.out.println("Printing histogram for cluster #" + j);
+				histogram.print();
+				_searchImageHistograms.add(histogram);
+				
+				if (_queryImageHistogram.Equals(histogram))
+				{
+					System.out.println("Query image matched cluster: " + j);
+					matched = true;
+					result = new Rectangle(rectangle_x, rectangle_y, rectangle_width, rectangle_height);
+					break;
+				}
+				result = new Rectangle(rectangle_x, rectangle_y, rectangle_width, rectangle_height);
+				break;
 			}
 			
-			
-			
 			JFrame frame1 = new JFrame();
+			JPanel panel = new JPanel();
+			panel.setLayout(null);
+			panel.setOpaque(true);
+			// Draw search image
 			JLabel label2 = new JLabel(new ImageIcon(image));
-			frame1.getContentPane().add(label2, BorderLayout.CENTER);
+			label2.setSize(image.getWidth(), image.getHeight());
+			label2.setLocation(0, 0);
+			panel.add(label2);
+			// Draw rectangle
+			JLabel rectangleLabel = new JLabel();
+			rectangleLabel.setLocation(
+					label2.getLocation().x + result.x,
+					label2.getLocation().y + result.y);
+			rectangleLabel.setSize(result.width, result.height);
+			rectangleLabel.setBorder(LineBorder.createBlackLineBorder());
+			panel.add(rectangleLabel);
+			panel.setComponentZOrder(rectangleLabel, 0);
+			panel.setComponentZOrder(label2, 1);
+			
 		    frame1.setLocation(372, 0);
-		    frame1.pack();
+			frame1.setContentPane(panel);
+		    //frame1.pack();
 		    frame1.setVisible(true);
 		    frame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		    
@@ -236,7 +280,11 @@ public class MediaSearchEngine
 		    //g.getContentPane().add(label2, BorderLayout.CENTER);
 		    g.pack();
 		    g.setVisible(true); */
-			
+			if (matched)
+			{
+				// Matched symbol
+				break;
+			}
 		}
 		
 		for (int i = 0; i < _searchImageHistograms.size(); i++) {	
@@ -249,10 +297,7 @@ public class MediaSearchEngine
 			//}
 		}
 		
-		
 		return result;
-		
-	
 	}
 	
 	
