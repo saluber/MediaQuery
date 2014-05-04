@@ -57,6 +57,8 @@ public class Cluster {
 	public void initRectangle(int x, int y){
 		rectangle[0] = x;
 		rectangle[1] = y;
+		rectangle[2] = 1;
+		rectangle[3] = 1;
 	}
 	
 	public void updateRectangle(Point p){
