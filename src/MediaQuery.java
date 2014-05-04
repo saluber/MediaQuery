@@ -275,11 +275,12 @@ public class MediaQuery
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 	    // Create histogram for search image & print it
+	    /*
 	    System.out.println("Printing search image HSV histogram");
 	    printHSVHistogram(_searchImage);
 	    System.out.println("------");
 	    System.out.println();
-	    
+	    */
 		// Initialize image search engine		
 		_searchEngine = new MediaSearchEngine(ImageWidth, ImageHeight, _searchImage);
 		

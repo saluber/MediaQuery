@@ -12,6 +12,7 @@ public class ClusterGroup {
 	ArrayList<ArrayList<Point>> listOfClusters;
 	Point[][] pointsArray;
 	ArrayList<Integer[]> listOfRectangles;
+	private static int VALUE_THRESHOLD = 0;
 	
 	public ClusterGroup(Integer[][] BPArray, int imageWidth, int imageHeight){
 		
@@ -36,7 +37,7 @@ public class ClusterGroup {
 				if (!visitedArray[x][y]){
 				
 					// If value is not 0
-					if (value != 0){
+					if (value > VALUE_THRESHOLD){
 						// Start a new cluster
 						Cluster cluster = new Cluster();
 						cluster.initRectangle(x, y);
@@ -112,7 +113,7 @@ public class ClusterGroup {
 					if (inBounds(x_point, y_point)){
 						// Check if has value in backProjected Image and has not been visited before
 						int value = backProjectedArray[x_point][y_point];
-						if (value != 0 && !visitedArray[x_point][y_point]){
+						if ((value > VALUE_THRESHOLD) && !visitedArray[x_point][y_point]){
 							neighbors.add(pointsArray[x_point][y_point]);
 						}
 					}

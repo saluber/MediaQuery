@@ -112,6 +112,7 @@ public class MediaSearchEngine
 		System.out.println("Finding query in search image");
 		
 		Rectangle result = null;
+		double resultDistance = Double.MAX_VALUE;
 		boolean matched = false;
 		
 		for (int i = 0; i < _searchImages.size(); i++) {
@@ -172,7 +173,7 @@ public class MediaSearchEngine
 					//int origQueryValue = queryValue;
 					
 					//System.out.println("Bin: " + bin + ", Value: " + queryValue + "   R: " + r + " G: " + g + " B: " + b + "  Hue: " + hsv[0] + " Sat: " + hsv[1] + " Val: " + hsv[2]);
-					// queryValue = (int)Math.round(((double)queryValue/(double)_queryImageHistogram.gexMaxBinValue())*255.0);
+					queryValue = (int)Math.round(((double)queryValue/(double)_queryImageHistogram.gexMaxBinValue())*255.0);
 					if (queryValue > 0)
 					{
 						//System.out.println("Bin: " + bin + " Query value: " + origQueryValue + " Rgb value: " + queryValue);
@@ -192,6 +193,23 @@ public class MediaSearchEngine
 			// Returns an ArrayList of Integer[] where each Integer[] corresponds to a rectangle
 			ClusterGroup clusters = new ClusterGroup(_backProjectedArray, _width, _height);
 			ArrayList<Integer[]> listOfRectangles = clusters.getListOfRectangles();
+			
+			// Sort clusters by size
+			for (int s = 0; s < listOfRectangles.size(); s++)
+			{
+				for (int r = 1; r < listOfRectangles.size(); r++)
+				{
+					int area1 = listOfRectangles.get(r-1)[2] * listOfRectangles.get(r-1)[3];
+					int area2 = listOfRectangles.get(r)[2] * listOfRectangles.get(r)[3];
+					if (area1 < area2)
+					{
+						// Swap
+						Integer[] rect = listOfRectangles.get(r);
+						listOfRectangles.set(r, listOfRectangles.get(r-1));
+						listOfRectangles.set(r-1, rect);
+					}
+				}
+			}
 			
 			// Create a histogram for each rectangle and add to rectangleHistograms
 			for (int j = 0; j< listOfRectangles.size(); j++){
@@ -218,17 +236,19 @@ public class MediaSearchEngine
 					}
 				}
 				
-				histogram.Normalize();
+				histogram.Normalize(this._queryImageHistogram);
+				System.out.println();
 				System.out.println("Printing histogram for cluster #" + j);
-				histogram.print();
+				//histogram.print();
 				_searchImageHistograms.add(histogram);
 				
-				if (_queryImageHistogram.Equals(histogram))
+				double distance = _queryImageHistogram.Compare(histogram);
+				if ((distance > 0) && (distance < resultDistance))
 				{
 					System.out.println("Query image matched cluster: " + j);
 					matched = true;
+					resultDistance = distance;
 					result = new Rectangle(rectangle_x, rectangle_y, rectangle_width, rectangle_height);
-					break;
 				}
 			}
 			
@@ -258,7 +278,7 @@ public class MediaSearchEngine
 			}
 			
 			frame1.setContentPane(panel);
-		    //frame1.pack();
+		    frame1.pack();
 		    frame1.setVisible(true);
 		    frame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		    
@@ -297,6 +317,12 @@ public class MediaSearchEngine
 			//	result = new Rectangle(10, 10, 100, 100);
 			//	break;
 			//}
+		}
+		
+		System.out.println("----");
+		if (result != null)
+		{
+			System.out.println("Matched with distance error: " + resultDistance);
 		}
 		
 		return result;
