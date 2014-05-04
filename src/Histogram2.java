@@ -28,6 +28,7 @@ public class Histogram2 {
 		_numPixels++;
 	}
 	
+	
 	public void Normalize() {
 		for (int i = 0; i<_histogram.length; i++) {
 				_histogram[i] = (int)Math.round(((double)_histogram[i]*(double)histogram_height)/(double)_numPixels);

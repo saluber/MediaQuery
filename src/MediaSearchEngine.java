@@ -1,12 +1,20 @@
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import sun.misc.FloatingDecimal;
 
@@ -20,6 +28,7 @@ public class MediaSearchEngine
 	private Histogram2 _queryImageHistogram;
 	private Integer[][] _backProjectedArray;
 	private BufferedImage _backProjectedImage;
+	private ArrayList<Histogram2> _rectangleHistograms;
 
 	
 	public MediaSearchEngine(int width, int height, BufferedImage searchImage)
@@ -34,6 +43,7 @@ public class MediaSearchEngine
 		_backProjectedImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 		_hsvQueryImage = new Double[_width][_height][3];
 		_queryImageHistogram = new Histogram2();
+		_rectangleHistograms = new ArrayList<Histogram2>();
 	}
 	
 	// Create HSV histogram for Query Image
@@ -176,10 +186,26 @@ public class MediaSearchEngine
 				}
 			}
 			
+			// Returns an ArrayList of Integer[] where each Integer[] corresponds to a rectangle
+			ClusterGroup clusters = new ClusterGroup(_backProjectedArray, _width, _height);
+			ArrayList<Integer[]> listOfRectangles = clusters.getListOfRectangles();
 			
-		//	MeanShift ms = new MeanShift();
-		//	int[] starting_point = ms.applyMeanShift(_backProjectedArray);
-		//	System.out.println("Starting point for block: " + starting_point[0] + ", " + starting_point[1]);
+			// Create a histogram for each rectangle and add to rectangleHistograms
+			for (int j=0; j<listOfRectangles.size(); j++){
+				Integer[] rectangle = listOfRectangles.get(j);
+				int rectangle_x = rectangle[0];
+				int rectangle_y = rectangle[1];
+				int rectangle_width = rectangle[2];
+				int rectangle_height = rectangle[3];
+				
+				for (int y=rectangle_y; y<rectangle_y + rectangle_height; y++){
+					for (int x=rectangle_x; x<rectangle_x + rectangle_width; x++){
+						
+						Double hue = hsvImage[x][y][0];
+					}
+				}
+			}
+			
 			
 			
 			JFrame frame1 = new JFrame();
@@ -198,6 +224,18 @@ public class MediaSearchEngine
 		    frame2.setVisible(true);
 		    frame2.setLocation(734, 0);
 		    frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+			
+			/*DrawRectangle rect=new DrawRectangle();
+			rect.getContentPane().add(label2, BorderLayout.CENTER);
+			rect.pack();
+			rect.setLocation(372, 400); */
+		    
+		   /* GameFrame g = new GameFrame(rectangles, new JLabel(new ImageIcon(image)));
+		    g.setLocation(372, 400);
+		    //g.getContentPane().add(label2, BorderLayout.CENTER);
+		    g.pack();
+		    g.setVisible(true); */
 			
 		}
 		
@@ -214,6 +252,81 @@ public class MediaSearchEngine
 		
 		return result;
 		
+	
 	}
+	
+	
+/*
+	
+	public class GameFrame extends JFrame {
+		public GameFrame(ArrayList<Integer[]> rectangles, JLabel label) {
+			super("Game Frame");
+		    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		   // getContentPane().add(label, BorderLayout.CENTER);
+		    Squares squares = new Squares();
+		    getContentPane().add(squares);
+		    for (int i = 0; i < rectangles.size(); i++) {
+		    	Integer[] rectangle = rectangles.get(i);
+		  		int rectangle_x = rectangle[0];
+		  		int rectangle_y = rectangle[1];
+		  		int rectangle_width = rectangle[2];
+		  		int rectangle_height = rectangle[3];
+		        squares.addSquare(rectangle_x, rectangle_y, rectangle_width, rectangle_height);
+		    }
+		    
+		  //  pack();
+		   // setLocationRelativeTo(null);
+		   // setVisible(true);
+
+		   }
+
+		}
+	
+	class Squares extends JPanel {
+		   private List<Rectangle> squares = new ArrayList<Rectangle>();
+
+		   public void addSquare(int x, int y, int width, int height) {
+		      Rectangle rect = new Rectangle(x, y, width, height);
+		      squares.add(rect);
+		   }
+
+		   @Override
+		   protected void paintComponent(Graphics g) {
+		      super.paintComponent(g);
+		      Graphics2D g2 = (Graphics2D) g;
+		      for (Rectangle rect : squares) {
+		    	 g2.setColor(Color.black);
+		         g2.draw(rect);
+		      }
+		   }
+
+		}
+	
+*/
+/*
+
+class DrawRectangle extends JFrame {
+	public DrawRectangle() {
+		//to  Set JFrame title
+		super("Draw A Rectangle In JFrame");
+
+		//Set default close operation for JFrame
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		//Set JFrame size
+		//setSize(500,500);
+
+		//Make JFrame visible
+		setVisible(true);
+	}
+
+	public void paint(Graphics g) {
+		super.paint(g);
+		g.setColor(Color.yellow);
+		g.drawRect(0,0,100,100);//this will draw your border. 
+
+	}
+} */
+
 
 }
