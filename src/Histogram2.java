@@ -8,7 +8,7 @@ public class Histogram2 {
 	private int GRAY_BINS = 4;
 	private int TOTAL_BINS = H_BINS + GRAY_BINS;
 	private int histogram_height = 256; //TOTAL_BINS; // 256
-	private double threshold = 0.01; // threshold for comparing histograms
+	private double threshold = 0.3; // threshold for comparing histograms
 	
 	private double _mean;
 	private double _var;
@@ -175,7 +175,7 @@ public class Histogram2 {
 	public boolean Equals(Histogram2 h)
 	{
 		boolean isMatch = true;
-		double distance = 0.25*(this.getVariance()/h.getVariance() + h.getVariance()/this.getVariance() + 2);
+		Double distance = 0.25*(this.getVariance()/h.getVariance() + h.getVariance()/this.getVariance() + 2);
 		System.out.println("preln distance: " + distance);
 		distance = 0.25*Math.log1p(distance);
 		System.out.println("ln distance: " + distance);
@@ -187,7 +187,7 @@ public class Histogram2 {
 		System.out.println("Search image var: " + h.getVariance());
 		System.out.println("B distance: " + distance);
 		
-		if (distance > threshold)
+		if ((distance > threshold) || distance.isNaN())
 		{
 			isMatch = false;
 		}

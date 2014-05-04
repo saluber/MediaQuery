@@ -230,11 +230,10 @@ public class MediaSearchEngine
 					result = new Rectangle(rectangle_x, rectangle_y, rectangle_width, rectangle_height);
 					break;
 				}
-				result = new Rectangle(rectangle_x, rectangle_y, rectangle_width, rectangle_height);
-				break;
 			}
 			
 			JFrame frame1 = new JFrame();
+		    frame1.setLocation(372, 0);
 			JPanel panel = new JPanel();
 			panel.setLayout(null);
 			panel.setOpaque(true);
@@ -243,18 +242,21 @@ public class MediaSearchEngine
 			label2.setSize(image.getWidth(), image.getHeight());
 			label2.setLocation(0, 0);
 			panel.add(label2);
-			// Draw rectangle
-			JLabel rectangleLabel = new JLabel();
-			rectangleLabel.setLocation(
-					label2.getLocation().x + result.x,
-					label2.getLocation().y + result.y);
-			rectangleLabel.setSize(result.width, result.height);
-			rectangleLabel.setBorder(LineBorder.createBlackLineBorder());
-			panel.add(rectangleLabel);
-			panel.setComponentZOrder(rectangleLabel, 0);
-			panel.setComponentZOrder(label2, 1);
 			
-		    frame1.setLocation(372, 0);
+			// Draw rectangle (if result found)
+			if (result != null)
+			{
+				JLabel rectangleLabel = new JLabel();
+				rectangleLabel.setLocation(
+						label2.getLocation().x + result.x,
+						label2.getLocation().y + result.y);
+				rectangleLabel.setSize(result.width, result.height);
+				rectangleLabel.setBorder(LineBorder.createBlackLineBorder());
+				panel.add(rectangleLabel);
+				panel.setComponentZOrder(rectangleLabel, 0);
+				panel.setComponentZOrder(label2, 1);
+			}
+			
 			frame1.setContentPane(panel);
 		    //frame1.pack();
 		    frame1.setVisible(true);
