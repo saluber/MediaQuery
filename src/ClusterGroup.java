@@ -13,7 +13,8 @@ public class ClusterGroup {
 	ArrayList<Integer[]> listOfRectangles;
 	private static int VALUE_THRESHOLD = 30;
 	private static int RADIUS = 1;
-	private static int MIN_CLUSTER_SIZE = 50;
+	private static int MIN_CLUSTER_SIZE = 100;
+	private static int RANGE = 1;
 	private static int _maxBin;
 	private Histogram2 _searchHistogram;
 	
@@ -30,10 +31,13 @@ public class ClusterGroup {
 		initializePointsArray();
 		_maxBin = maxBin;
 		_searchHistogram = new Histogram2();
-		
-		
-		System.out.println("max bin: " + _maxBin);
-		
+		Integer[] binRange = _searchHistogram.getBinRange(_maxBin, RANGE);
+		System.out.println("Bin range for bin " + _maxBin + ": ");
+		for (int i=0; i<binRange.length; i++){
+			System.out.print(binRange[i] + ", ");
+		}
+		System.out.println("");
+				
 		for (int y=0; y<HEIGHT; y++){
 			for (int x=0; x<WIDTH; x++){
 				
@@ -47,11 +51,22 @@ public class ClusterGroup {
 			hsv[2] = v_value.floatValue();
 			
 			int bin = _searchHistogram.getHBin(hsv);
+			boolean containsBin = false;
+			
+		//	Integer[] testRange = {17};
+			
+			for (int i=0; i<binRange.length; i++){
+				if (bin == binRange[i]){
+					containsBin = true;
+				//	System.out.println("Contains true");
+					break;
+				}
+			}
 
 
 				// If point has not been visited
-				if ((!visitedArray[x][y]) && ((bin == _maxBin))){
-				//	System.out.println("Bin value: " + value);
+				if ((!visitedArray[x][y]) && containsBin){
+					//System.out.println("Bin value: " + value);
 
 					// If value is not 0
 					// Cluster must start with max color value from logo histogram

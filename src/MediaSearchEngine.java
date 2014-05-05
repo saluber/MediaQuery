@@ -19,8 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
-import sun.misc.FloatingDecimal;
-
 public class MediaSearchEngine
 {
 	private int _width, _height;
@@ -32,6 +30,7 @@ public class MediaSearchEngine
 	private Integer[][] _backProjectedArray;
 	private BufferedImage _backProjectedImage;
 	private ArrayList<Histogram2> _rectangleHistograms;
+	private int RANGE = 2;
 
 	
 	public MediaSearchEngine(int width, int height, BufferedImage searchImage)
@@ -92,9 +91,9 @@ public class MediaSearchEngine
 					Float h_value = new Float(hsv[0]); // hue
 					Float s_value = new Float(hsv[1]); // sat
 					Float v_value = new Float(hsv[2]); // val
-					_hsvQueryImage[x][y][0] = new FloatingDecimal(h_value.floatValue()).doubleValue();
-					_hsvQueryImage[x][y][1] = new FloatingDecimal(s_value.floatValue()).doubleValue();
-					_hsvQueryImage[x][y][2] = new FloatingDecimal(v_value.floatValue()).doubleValue();
+					_hsvQueryImage[x][y][0] = new Double(h_value.doubleValue());
+					_hsvQueryImage[x][y][1] = new Double(s_value.doubleValue());
+					_hsvQueryImage[x][y][2] = new Double(v_value.doubleValue());
 					
 					_queryImageHistogram.AddValue((hsv));					
 				}
@@ -163,9 +162,10 @@ public class MediaSearchEngine
 					Float h_value = new Float(hsv[0]); // hue
 					Float s_value = new Float(hsv[1]); // sat
 					Float v_value = new Float(hsv[2]); // val
-					hsvImage[x][y][0] = new FloatingDecimal(h_value.floatValue()).doubleValue();
-					hsvImage[x][y][1] = new FloatingDecimal(s_value.floatValue()).doubleValue();
-					hsvImage[x][y][2] = new FloatingDecimal(v_value.floatValue()).doubleValue();
+					hsvImage[x][y][0] = new Double(h_value.doubleValue());
+					hsvImage[x][y][1] = new Double(s_value.doubleValue());
+					hsvImage[x][y][2] = new Double(v_value.doubleValue());
+					h.AddValue(hsv);
 					
 					// Back-projection Algorithm
 					// Get bin number of hue
@@ -174,6 +174,12 @@ public class MediaSearchEngine
 					// Get value of the corresponding bin from the Query Image
 					int queryValue = _queryImageHistogram.getBinValue(bin);
 					
+					if (queryValue == 0){
+						Integer[] binRange = h.getBinRange(bin, RANGE);
+						for (int j=0; j<binRange.length; j++){
+							queryValue += binRange[i];
+						}
+					}
 
 					queryValue = (int)Math.round(((double)queryValue/(double)Histogram2.histogram_height)*255.0);
 					
@@ -192,6 +198,8 @@ public class MediaSearchEngine
 					
 				}
 			}
+			h.Normalize();
+			h.print();
 			
 			int maxBin = _queryImageHistogram.getMaxBin();
 			

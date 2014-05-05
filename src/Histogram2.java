@@ -1,4 +1,3 @@
-import sun.misc.FloatingDecimal;
 
 public class Histogram2 {
 	
@@ -8,8 +7,9 @@ public class Histogram2 {
 	private int GRAY_BINS = 4;
 	private int TOTAL_BINS = H_BINS + GRAY_BINS;
 	public static int histogram_height = 1000; //TOTAL_BINS; // 256
-	private double threshold = 0.5; // threshold for comparing histograms
+	private double threshold = 0.7; // threshold for comparing histograms
 	private double valueRatioThreshold = 0.5;
+	private static int RANGE = 1;
 	
 	private double _mean;
 	private double _var;
@@ -103,9 +103,9 @@ public class Histogram2 {
 		Float s_value = new Float (hsv[1]);
 		Float v_value = new Float (hsv[2]);
 		
-		double h = new FloatingDecimal(h_value.floatValue()).doubleValue();
-		double s = new FloatingDecimal(s_value.floatValue()).doubleValue();
-		double v = new FloatingDecimal(v_value.floatValue()).doubleValue();
+		double h = new Double(h_value.doubleValue());
+		double s = new Double(s_value.doubleValue());
+		double v = new Double(v_value.doubleValue());
 		
 		if (v < 0.1)
 		{
@@ -209,7 +209,7 @@ public class Histogram2 {
 		
 		int maxBin = this.getMaxBin();
 		boolean containsRange = false;
-		Integer[] binRange = h.getBinRange(h.getMaxBin());
+		Integer[] binRange = h.getBinRange(h.getMaxBin(), RANGE);
 		for (int i=0; i<binRange.length; i++){
 			if (binRange[i] == maxBin) {
 				containsRange = true;
@@ -253,6 +253,51 @@ public class Histogram2 {
 	}
 	
 	
+	public Integer[] getBinRange(int bin, int range){
+		Integer[] binRange;
+		if (bin == H_BINS){
+			binRange = new Integer[1];
+			binRange[0] = bin;
+		} else if (bin > H_BINS) {
+			binRange = new Integer[3];
+			binRange = new Integer[3];
+			binRange[0] = bin;
+			binRange[1] = bin + 1;
+			binRange[2] = bin + 2;
+		} else if (bin == 0 ){
+			binRange = new Integer[(range*2) + 1];
+			for (int i=0; i<range; i++) {
+				binRange[i] = H_BINS - range + i;
+			}
+			binRange[range] = bin;
+			for (int i=0; i<range; i++){
+				binRange[range + i + 1] = i + 1;
+			}
+		} else if (bin == H_BINS - 1) {
+			binRange = new Integer[(range*2) + 1];
+			for (int i=0; i<range; i++) {
+				binRange[i] = H_BINS -1- range + i;
+			}
+			binRange[range] = bin;
+			for (int i=0; i<range; i++){
+				binRange[range + i + 1] = i + 1;
+			}
+			
+		} else {
+			binRange = new Integer[(range*2) + 1];
+			for (int i=0; i<range; i++){
+				binRange[i] = bin - range + i;
+			}
+			binRange[range] = bin;
+			for (int i=0; i<range; i++){
+				binRange[range + i + 1] = bin + i + 1;
+			}
+			
+		}
+		return binRange;
+	}
+	
+	/*
 	public Integer[] getBinRange(int bin){
 		Integer[] range;
 		if (bin == H_BINS) {
@@ -280,5 +325,7 @@ public class Histogram2 {
 			range[2] = bin+1;
 		}
 	return range;
-	}
+	} */
+	
+	
 }
