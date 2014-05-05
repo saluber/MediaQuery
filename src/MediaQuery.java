@@ -8,6 +8,10 @@ import javax.swing.JLabel;
 
 public class MediaQuery
 {
+	// Project Constants
+	private static String _projectTitle = "CSCI-576 Final Project";
+	private static String _projectAuthors = "Alexa Dorsey & Samantha Luber";
+	private static String _projectDate = "USC Spring 2014";
 	
 	// Image Constants
 	private static final Integer ImageWidth = 352;
@@ -211,8 +215,24 @@ public class MediaQuery
 		
 		
 		// Search for image and output result
-		_searchEngine.find();
+		boolean result = _searchEngine.find();
+		
+		printResults(result);
+		
 
 		return;
+	}
+	
+	public static void printResults(boolean result){
+		System.out.println("\n--------------------------------------------");
+		System.out.println(_projectTitle + " | " + _projectDate + " | " + _projectAuthors);
+		System.out.println("\nQuery Image path: " + _queryImageFilePath);
+		System.out.println("Search Image path: " + _searchImageFilePath);
+		if (result) {
+			System.out.println("\nQuery Image found in Search Image!");
+		} else {
+			System.out.println("\nQuery Image not found in Search Image.");
+		}
+		System.out.println("--------------------------------------------\n");
 	}
 }

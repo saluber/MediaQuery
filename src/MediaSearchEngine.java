@@ -82,7 +82,8 @@ public class MediaSearchEngine {
 	}
 	
 	// Searches images for query image
-	public void find() {		
+	public boolean find() {	
+		boolean result = false;
 		int resultNum = -1;
 		double resultDistance = Double.MAX_VALUE;
 		
@@ -212,6 +213,7 @@ public class MediaSearchEngine {
 				double distance = _queryImageHistogram.Compare(histogram);
 				if ((distance > 0) && (distance < resultDistance))
 				{
+					result = true;
 					resultDistance = distance;
 					resultNum = j;
 				}
@@ -237,6 +239,8 @@ public class MediaSearchEngine {
 			searchImageRectangles.pack();
 			searchImageRectangles.setLocation(734, 0);
 		}
+		
+		return result;
 	}
 	
 	
