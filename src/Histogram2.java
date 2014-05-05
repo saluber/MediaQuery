@@ -4,7 +4,7 @@ public class Histogram2 {
 	
 	private Integer[] _histogram;
 	private int _numPixels;
-	public static int H_BINS = 60;
+	public static int H_BINS = 30;
 	private int GRAY_BINS = 4;
 	private int TOTAL_BINS = H_BINS + GRAY_BINS;
 	public static int histogram_height = 1000; //TOTAL_BINS; // 256
